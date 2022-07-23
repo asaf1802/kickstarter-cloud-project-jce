@@ -44,7 +44,7 @@ def addProject():
 
 
 
-# GET PROJECTS TABLE - DynamoDB
+# GET PROJECTS BY USER ID - DynamoDB
 @application.route('/getProjects', methods=['POST'])
 def getProjects():
     dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
@@ -60,8 +60,31 @@ def getProjects():
     print(projects)
     return Response(json.dumps(projects), mimetype='application/json', status=200)  
 
-
 # curl -i -X POST -H "Content-Type: application/json" -d '{"user_id": "5rtTKC7sE2hRIXdfOca6CQNqFgR2"}' http://localhost:8000/getProjects
+
+
+
+# DELETE PROJECT BY PROJECT ID - DynamoDB
+@application.route('/deleteProject', methods=['POST'])
+def deleteProject():
+    dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+    table = dynamodb.Table('projects')
+    
+    data = request.data
+    data_json = json.loads(data)
+    project_id = data_json['project_id']
+
+    response = table.delete_item(
+        Key={
+            'project_id': project_id,
+        }
+    )
+
+    return Response(json.dumps({'Output': 'Delete Succeed'}), mimetype='application/json', status=200)
+# curl -i -X POST -H "Content-Type: application/json" -d '{"project_id": "b38e5046-33f3-4f0f-a7c8-76fb9427947c"}' http://localhost:8000/deleteProject
+
+
+
 
 if __name__ == '__main__':
     flaskrun(application)
