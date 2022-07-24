@@ -97,9 +97,8 @@ def uploadImage():
     s3.Bucket(bucket).upload_fileobj(image_file, image_full_name, ExtraArgs={'ACL': 'public-read', 'ContentType': 'image/jpeg'}) 
     image_url = 'https://kickstarter-cloud-project-assets.s3.amazonaws.com/'+ image_full_name
     
-    
     rekognition = boto3.client("rekognition", region_name = 'us-east-1')
-    
+    image_url = 'https://kickstarter-cloud-project-assets.s3.amazonaws.com/'
     response = rekognition.detect_moderation_labels(
     Image={
         'S3Object': {
@@ -110,8 +109,12 @@ def uploadImage():
     )
     
     print(response)
+    
     moderationLabels = response['ModerationLabels']
-    return Response(json.dumps(moderationLabels), mimetype='application/json', status=200)
+    res = [{"image_url":image_url, "moderationLabels": moderationLabels} ]
+
+    return Response(json.dumps(res), mimetype='application/json', status=200)
+# curl -i -X POST -H "Content-Type: application/json" -d '{"project_id": "b38e5046-33f3-4f0f-a7c8-76fb9427947c"}' http://localhost:8000/uploadImage
 
 if __name__ == '__main__':
     flaskrun(application)
