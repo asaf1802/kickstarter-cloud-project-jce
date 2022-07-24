@@ -85,6 +85,33 @@ def deleteProject():
 
 
 
+# UPLOAD IMAGE TO S3 AND REKOGNITION MODERATION ANALYSIS
+@application.route('/uploadImage', methods=['POST'])
+def uploadImage():
+    s3 = boto3.resource('s3', region_name='us-east-1')
+    bucket = 'kickstarter-cloud-project-assets'
+    
+    image_file = request.files['image']
+    image_id = str(uuid.uuid4())
+    image_full_name  = "%s.jpg" %  image_id
+    s3.Bucket(bucket).upload_fileobj(image_file, image_full_name, ExtraArgs={'ACL': 'public-read', 'ContentType': 'image/jpeg'}) 
+    image_url = 'https://kickstarter-cloud-project-assets.s3.amazonaws.com/'+ image_full_name
+    
+    
+    rekognition = boto3.client("rekognition", region_name = 'us-east-1')
+    
+    response = rekognition.detect_moderation_labels(
+    Image={
+        'S3Object': {
+            'Bucket': bucket,
+            'Name': image_full_name,
+        }
+    }
+    )
+    
+    print(response)
+    moderationLabels = response['ModerationLabels']
+    return Response(json.dumps(moderationLabels), mimetype='application/json', status=200)
 
 if __name__ == '__main__':
     flaskrun(application)
