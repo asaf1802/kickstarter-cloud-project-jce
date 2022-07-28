@@ -98,7 +98,6 @@ def uploadImage():
     image_url = 'https://kickstarter-cloud-project-assets.s3.amazonaws.com/'+ image_full_name
     
     rekognition = boto3.client("rekognition", region_name = 'us-east-1')
-    image_url = 'https://kickstarter-cloud-project-assets.s3.amazonaws.com/'
     response = rekognition.detect_moderation_labels(
     Image={
         'S3Object': {
